@@ -6,7 +6,8 @@ Ta mission : transformer ma méthodologie de Price Action en **règles mathémat
 
 ## 2. Périmètre
 - **Actifs** : XAUUSD (Or) et GER40 (DAX). Chaque actif est testé séparément.
-- **Unités de temps** : M1, M5, M15, M30, H1, H4, D1. Chaque UT a **ses propres réglages optimisés**.
+- **Unités de temps** : M1, M5, M15, M30, H1, H4, D1.
+- **Principe absolu : aucun paramètre universel.** Chaque unité de temps est mesurée selon son propre fonctionnement et reçoit **ses propres réglages, fixés par ses propres backtests** (et séparément pour chaque actif). Un réglage validé en H1 n'est jamais réutilisé en M15 sans y avoir été testé.
 - **Plateforme cible** : MetaTrader 5 (indicateur `.mq5` + Expert Advisor `.mq5` pour le Testeur de Stratégie).
 
 ## 3. Le lexique (ma carte de référence, à ne pas modifier)
@@ -56,18 +57,26 @@ Les modules 1 à 3 ne sont pas des stratégies complètes. On mesure donc **la v
 
 ## 7. Plan, module par module (validation obligatoire entre chaque)
 
-### Module 1 — Structure : swings, HH/HL/LH/LL, BOS, CHOCH
+### Module 1 — Structure : swings, HH/HL/LH/LL, BOS, CHOCH (toutes les UT, M1 → D1)
+- HH/HL = haussière, LH/LL = baissière ; BOS = continuation, CHOCH = retournement.
+- Chaque UT est optimisée **indépendamment** : un jeu de réglages par UT et par actif.
 - Code Python + MQL5 (indicateur qui trace swings, BOS et CHOCH en temps réel, sans repainting).
 - Grille : `LeftBars`, `RightBars` (ex. 1–10), `BreakMode`.
 - Question de recherche : par UT et par actif, un BOS prédit-il une continuation, un CHOCH un retournement, mieux que le hasard ?
 - Livrable : tableau des meilleurs réglages par UT + heatmaps + verdict edge / pas d'edge.
 
-### Module 2 — Liquidité : EQH/EQL, PDH/PDL, PWH/PWL
-- Grille : `MaxTolerancePoints` (ou multiple d'ATR), `MinBarsBetween`.
-- Questions : quelle est la probabilité qu'un niveau soit balayé ? Que se passe-t-il après un sweep (retournement ou continuation) ? Quels niveaux réagissent le mieux, par UT ?
+### Module 2 — Liquidité : EQH/EQL, PDH/PDL, PWH/PWL, swings HH/HL/LH/LL
+- Les niveaux de liquidité viennent **majoritairement des unités de temps supérieures**, en priorité **EQH/EQL et les High/Low** (de jour, de semaine, des swings).
+- **Ce ne sont pas les agents qui choisissent : ce sont les données.** On mesure chaque type de niveau séparément, sur chaque UT source (M15, H1, H4, D1, W1), pour trouver lequel fournit la *vraie* liquidité :
+  - taux de balayage (le prix va-t-il chercher le niveau ?) ;
+  - réaction après le sweep (retournement ou continuation, en R ou en multiples d'ATR) ;
+  - comparaison avec des niveaux aléatoires (base de contrôle).
+- Grille par UT source : `MaxTolerancePoints` (ou multiple d'ATR), `MinBarsBetween`, nombre de touches minimum pour EQH/EQL.
+- Livrable : un classement des types de niveaux (EQH/EQL vs PDH/PDL vs PWH/PWL vs swings) par UT source et par actif, avec les réglages propres à chaque UT.
 
-### Module 3 — Displacement : FVG / IMB
-- Grille : `MinFVGSizePoints` (ou k × ATR), `DisplacementATRMult`, `MitigationLevel`, `FVGMaxAgeBars`.
+### Module 3 — Displacement : FVG / IMB (uniquement M1, M5 et M15)
+- Les FVG/IMB ne sont mesurés **que sur M1, M5 et M15**. **Chacune de ces UT a sa propre mesure et ses propres réglages** (aucun réglage partagé).
+- Grille par UT : `MinFVGSizePoints` (ou k × ATR), `DisplacementATRMult`, `MitigationLevel`, `FVGMaxAgeBars`.
 - Questions : taux de comblement des FVG, taux de respect (réaction dans la zone), apport du FVG en confirmation d'un BOS ou d'un CHOCH (avec FVG vs sans FVG).
 
 ### Module 4 — Intégration MTF et modèle de trade
