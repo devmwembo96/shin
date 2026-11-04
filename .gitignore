@@ -36,3 +36,6 @@ wheels/
 
 # mypy
 .mypy_cache/
+
+# Données factices des tests d analyse (ne jamais commiter)
+strategie-pa/analyse/tests_donnees_factices/
