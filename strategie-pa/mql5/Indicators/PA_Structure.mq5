@@ -1,4 +1,4 @@
-//+------------------------------------------------------------------+
+﻿//+------------------------------------------------------------------+
 //|                                                 PA_Structure.mq5 |
 //|  Module 1 - Affichage swings, HH/HL/LH/LL, BOS, CHOCH (sans       |
 //|  repainting : tout est calculé sur barres fermées).               |
