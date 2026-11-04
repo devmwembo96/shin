@@ -30,12 +30,16 @@ Ta mission : transformer ma méthodologie de Price Action en **règles mathémat
 
 Toute ambiguïté restante → **pose-moi la question avant de coder**, ne choisis pas à ma place.
 
-## 5. Contraintes techniques (importantes)
-- MT5 ne tourne pas dans l'environnement des agents. On procède donc en **deux voies** :
-  - **Voie A, recherche (Python)** : moteur de backtest qui reproduit exactement la logique ci-dessus, alimenté par mes données exportées de MT5 (CSV, idéalement M1 sur plusieurs années, avec spread). Les UT supérieures sont reconstruites à partir du M1. Toutes les optimisations massives se font ici.
-  - **Voie B, production (MQL5)** : indicateur MTF + EA de test, qui implémentent **la même logique**, plus un protocole pour que je vérifie les résultats moi-même dans le Testeur de Stratégie MT5.
-- **Test de parité obligatoire** : sur une même période, les événements détectés (swings, BOS, CHOCH, FVG…) par Python et par MQL5 doivent concorder. Je fournis un export CSV de l'indicateur MT5 pour la comparaison.
-- Les coûts sont toujours inclus : spread réel ou fixé, commission, slippage.
+## 5. Boucle de travail (cycle itératif)
+1. **Agents Claude** : codent en MQL5 l'indicateur, l'EA de test et les fichiers communs (`.mqh`), plus un **protocole de backtest** et **un prompt prêt à coller dans l'assistant IA intégré de MT5** pour chaque backtest (symbole, UT, période, modèle de ticks, plages d'optimisation).
+2. **Moi (trader)** : je lance ces backtests dans MT5 via l'assistant IA et je récupère les **fichiers CSV** générés par l'EA.
+3. **Agents Claude** : analysent les CSV (script Python fourni), disent ce qui a marché ou non, **resserrent les plages de réglages** et produisent le prompt du backtest suivant.
+4. On répète jusqu'à un edge validé en out-of-sample, puis on passe au module suivant.
+
+Contraintes :
+- Les agents ne peuvent ni compiler ni exécuter MT5 : le code doit être relu avec soin et compiler sans erreur dans MetaEditor (je remonte les erreurs de compilation s'il y en a).
+- L'EA écrit lui-même ses résultats en CSV : journal des événements/trades en test simple, et un CSV de toutes les passes en optimisation (via `OnTester` + frames).
+- Les coûts sont toujours inclus : spread réel du broker (« Every tick based on real ticks »), commission, slippage.
 - GER40 : filtre de session paramétrable (ex. 08:00–17:30 heure de Francfort), gestion des changements d'heure.
 
 ## 6. Comment mesurer l'edge
@@ -79,4 +83,4 @@ Les modules 1 à 3 ne sont pas des stratégies complètes. On mesure donc **la v
 5. Questions ouvertes, puis **STOP : attendre ma validation avant le module suivant.**
 
 ## 9. Règle finale
-Pas d'invention de résultats. Chaque chiffre doit venir d'un backtest réellement exécuté sur mes données. Si une donnée manque, demande-la.
+Pas d'invention de résultats. Chaque chiffre doit venir d’un backtest MT5 réellement exécuté (CSV fournis par moi). Si une donnée manque, demande-la.
