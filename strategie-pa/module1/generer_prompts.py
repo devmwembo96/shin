@@ -59,6 +59,17 @@ PLAGES_DEFAUT = {
     "InpBreakMode": (0, 1, 1),
 }
 
+# AUCUN réglage universel : chaque symbole x UT peut (et doit, dès l'itération 2)
+# avoir ses propres plages. Priorité : PLAGES_SPECIFIQUES (symbole, UT, événement)
+# > PLAGES_PAR_UT (symbole, UT) > PLAGES_DEFAUT.
+# Seuls les inputs listés remplacent ceux du niveau inférieur.
+# Exemple :
+# PLAGES_PAR_UT = {
+#     ("XAUUSD", "M5"): {"InpLeftBars": (3, 1, 12), "InpRightBars": (2, 1, 6)},
+#     ("GER40", "H4"): {"InpLeftBars": (2, 1, 6)},
+# }
+PLAGES_PAR_UT = {}
+
 # Surcharges par combinaison (symbole, UT, InpTradeEvents) -> dict de plages.
 # Exemple (itération 2) :
 # PLAGES_SPECIFIQUES = {
@@ -122,6 +133,7 @@ def nb_valeurs(start, step, stop):
 
 def plages_pour(sym, ut, ev):
     p = dict(PLAGES_DEFAUT)
+    p.update(PLAGES_PAR_UT.get((sym, ut), {}))
     p.update(PLAGES_SPECIFIQUES.get((sym, ut, ev), {}))
     return p
 

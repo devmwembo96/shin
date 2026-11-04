@@ -374,6 +374,7 @@ def plateaux(piv):
     moy = np.full(v.shape, np.nan)
     part_pos = np.full(v.shape, np.nan)
     couv = np.full(v.shape, np.nan)
+    tronq = np.full(v.shape, np.nan)
     for i in range(nl):
         for j in range(nr):
             if np.isnan(v[i, j]):
@@ -383,8 +384,10 @@ def plateaux(piv):
             moy[i, j] = valides.mean()
             part_pos[i, j] = (valides > 0).mean()
             couv[i, j] = len(valides) / bloc.size
+            # moyenne tronquée : sans la meilleure valeur du voisinage (anti-pic)
+            tronq[i, j] = np.sort(valides)[:-1].mean() if len(valides) > 1 else valides[0]
     mk = lambda a: pd.DataFrame(a, index=piv.index, columns=piv.columns)
-    return mk(moy), mk(part_pos), mk(couv)
+    return mk(moy), mk(part_pos), mk(couv), mk(tronq)
 
 
 def tracer_heatmaps(grilles, plats, titre, chemin, choix=None):
@@ -460,7 +463,8 @@ def table_md(df, nd=3):
         for c in cols:
             v = r[c]
             if isinstance(v, (float, np.floating)):
-                cel.append(fmt(float(v), 0 if c in ("L", "R", "B", "trades", "n") else nd))
+                entier = c in ("L", "R", "B", "n") or "trades" in str(c).lower()
+                cel.append(fmt(float(v), 0 if entier else nd))
             else:
                 cel.append(str(v))
         lignes.append("| " + " | ".join(cel) + " |")
@@ -472,7 +476,9 @@ def texte_regles():
 **plateau retenu** en in-sample (IS). Une cellule de grille n'est valide que si elle a
 **≥ {mt} trades**. Le « plateau » d'une cellule = moyenne de avg_R sur la cellule et ses
 voisines LeftBars ±1 / RightBars ±1 (même BreakMode). On retient la cellule dont le plateau
-est le plus élevé (parmi celles dont ≥ {cv:.0%} du voisinage est valide), **jamais le pic isolé**.
+est le plus élevé (parmi celles dont ≥ {cv:.0%} du voisinage est valide), **jamais le pic isolé** :
+le tri se fait d'abord sur « ≥ {pp:.0%} de voisins positifs », puis sur la moyenne du voisinage
+**sans sa meilleure valeur** (un pic isolé ne peut donc pas tirer ses voisins), puis sur la moyenne.
 
 Conditions :
 - **C0 Échantillon** : au moins une cellule IS avec ≥ {mt} trades.
@@ -550,24 +556,26 @@ def analyser_groupe(cle, g_is, g_oos, g_rand, trades_df, out_dir, rng):
     plats, parts, couvs = {}, {}, {}
     meilleurs = []
     for b, piv in grilles.items():
-        m, p, cv = plateaux(piv)
+        m, p, cv, tq = plateaux(piv)
         plats[b], parts[b], couvs[b] = m, p, cv
         for L in m.index:
             for R in m.columns:
                 val = m.loc[L, R]
                 if np.isfinite(val) and cv.loc[L, R] >= COUVERTURE_VOISINAGE:
-                    meilleurs.append((val, piv.loc[L, R], int(L), int(R), b, p.loc[L, R]))
+                    meilleurs.append((val, piv.loc[L, R], int(L), int(R), b, p.loc[L, R],
+                                      tq.loc[L, R]))
     if not meilleurs:  # aucun voisinage assez couvert : on prend la meilleure moyenne
         for b, m in plats.items():
             for L in m.index:
                 for R in m.columns:
                     if np.isfinite(m.loc[L, R]):
                         meilleurs.append((m.loc[L, R], grilles[b].loc[L, R], int(L), int(R), b,
-                                          parts[b].loc[L, R]))
+                                          parts[b].loc[L, R], m.loc[L, R]))
         avert("%s : aucun voisinage couvert à %.0f %% ; plateau choisi sur couverture partielle"
               % (tag, COUVERTURE_VOISINAGE * 100))
-    meilleurs.sort(key=lambda x: (x[0], x[1]), reverse=True)
-    pm, centre_avg, L0, R0, B0, ppos = meilleurs[0]
+    # tri : 1) voisinage majoritairement positif, 2) moyenne tronquée, 3) moyenne
+    meilleurs.sort(key=lambda x: (x[5] >= PART_VOISINS_POSITIFS, x[6], x[0]), reverse=True)
+    pm, centre_avg, L0, R0, B0, ppos, ptq = meilleurs[0]
     choix = dict(left_bars=L0, right_bars=R0, break_mode=B0)
     ligne_c = g[(g["left_bars"] == L0) & (g["right_bars"] == R0) & (g["break_mode"] == B0)].iloc[0]
     pic = valides.iloc[0]
@@ -577,8 +585,8 @@ def analyser_groupe(cle, g_is, g_oos, g_rand, trades_df, out_dir, rng):
     autre_mode = {b: np.nanmax(plats[b].values) if np.isfinite(plats[b].values).any() else np.nan
                   for b in plats}
     md.append("**Plateau retenu** : LeftBars=%d, RightBars=%d, BreakMode=%d → plateau %s R, "
-              "cellule %s R, %s trades, t≈%s, voisins positifs %s.\n"
-              % (L0, R0, B0, fmt(pm), fmt(centre_avg), fmt(ligne_c["trades"], 0),
+              "moyenne tronquée %s R, cellule %s R, %s trades, t≈%s, voisins positifs %s.\n"
+              % (L0, R0, B0, fmt(pm), fmt(ptq), fmt(centre_avg), fmt(ligne_c["trades"], 0),
                  fmt(ligne_c["t_approx"], 2), "%.0f %%" % (100 * ppos)))
     if cle_params(pic) != (L0, R0, B0):
         pl_pic = plats[int(pic["break_mode"])].loc[pic["left_bars"], pic["right_bars"]]
@@ -586,7 +594,7 @@ def analyser_groupe(cle, g_is, g_oos, g_rand, trades_df, out_dir, rng):
                   "→ %s.\n" % (pic["left_bars"], pic["right_bars"], pic["break_mode"],
                                fmt(pic["avg_r"]), fmt(pl_pic),
                                "pic isolé, écarté" if pic["avg_r"] - pl_pic > 0.1
-                               else "proche du plateau"))
+                               else "non retenu, plateau voisin plus stable"))
     md.append("Meilleur plateau par BreakMode : " + ", ".join(
         "B%d = %s R" % (b, fmt(v)) for b, v in sorted(autre_mode.items())) + "\n")
 
@@ -812,9 +820,7 @@ def analyser_trades(tr, out_dir, rng, split):
                 rr_info[(sym, tf, L, R, B, E, rnd)] = (ks[ib], esp[ib], rr_teste)
                 md.append("Espérance estimée selon le TP (calculée sur les MFE ; valable seulement "
                           "pour TP ≤ RR testé = %g) :\n" % rr_teste)
-                md.append(table_md(pd.DataFrame({"TP (R)": ks, "espérance R": esp}).iloc[::2]
-                                   if len(ks) > 8 else pd.DataFrame({"TP (R)": ks,
-                                                                     "espérance R": esp}), nd=3))
+                md.append(table_md(pd.DataFrame({"TP (R)": ks, "espérance R": esp}), nd=3))
                 note = (" (= RR testé : la vraie optimale peut être plus haute, tester un RR "
                         "supérieur)" if abs(ks[ib] - rr_teste) < 1e-9 else "")
                 md.append("→ TP estimé optimal : **%g R** (espérance %s R)%s.\n"
