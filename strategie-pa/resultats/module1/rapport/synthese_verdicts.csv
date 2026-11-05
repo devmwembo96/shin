@@ -1,0 +1,2 @@
+symbole;ut;evenement;rr;sl_buffer;n_passes_is;n_passes_oos;ohlc;C0;C1;C2;C3;C4;verdict;raisons
+XAUUSD;H1;BOS;3;0.1;108;108;False;False;False;;;;PAS D'EDGE;C0 faux : échantillon insuffisant (< 100 trades)
