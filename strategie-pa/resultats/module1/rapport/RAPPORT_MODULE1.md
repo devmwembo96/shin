@@ -1,13 +1,13 @@
 # Rapport Module 1 — Structure (BOS / CHOCH)
 
-Généré le 2026-11-05 14:13 par `analyse/analyse_module1.py` à partir de **4 fichier(s) CSV** dans `resultats/module1`. Début du forward : 2025-07-01. Tous les chiffres proviennent des CSV de l'EA (coûts du testeur inclus) ; rien n'est extrapolé.
+Généré le 2026-11-05 14:14 par `analyse/analyse_module1.py` à partir de **3 fichier(s) CSV** dans `resultats/module1`. Début du forward : 2025-07-01. Tous les chiffres proviennent des CSV de l'EA (coûts du testeur inclus) ; rien n'est extrapolé.
 
 ## 1. Verdict par symbole × UT
 
 | Symbole | UT | Verdict | Détail | avg_R IS | trades | avg_R OOS | p aléa |
 |---|---|---|---|---|---|---|---|
 | XAUUSD | M15 | **À CONFIRMER** | BOS : À CONFIRMER (L6 R3 B1) | 0.271 | 275 | — | — |
-| XAUUSD | H1 | **À CONFIRMER** | BOS : À CONFIRMER (L3 R1 B1) / CHOCH : PAS D'EDGE (L2 R1 B1) | 0.123 | 118 | 0.333 | — |
+| XAUUSD | H1 | **À CONFIRMER** | BOS : À CONFIRMER (L3 R1 B1) / CHOCH : PAS D'EDGE (L2 R1 B1) | 0.123 | 118 | — | — |
 
 
 Détail des conditions : `synthese_verdicts.csv`.
@@ -47,7 +47,6 @@ Le verdict symbole × UT = meilleur verdict entre BOS et CHOCH (détail affiché
 | fichier | type | lignes |
 |---|---|---|
 | PA_M1_opt_XAUUSD_H1_20261105_1122.csv | optimisation | 108 |
-| PA_M1_opt_XAUUSD_H1_20261105_1153.csv | optimisation | 22 |
 | PA_M1_opt_XAUUSD_H1_20261105_1244.csv | optimisation | 108 |
 | PA_M1_opt_XAUUSD_M15_20261105_1347.csv | optimisation | 108 |
 
@@ -119,29 +118,13 @@ Meilleur plateau par BreakMode : B0 = 0.052 R, B1 = 0.142 R
 
 **Forward / out-of-sample**
 
-Top 5 IS revus en OOS :
-
-| L | R | B | avg_R IS | trades IS | avg_R OOS | trades OOS |
-|---|---|---|---|---|---|---|
-| 4 | 2 | 1 | 0.274 | 110 | — | — |
-| 4 | 1 | 1 | 0.243 | 120 | 0.384 | 60 |
-| 3 | 2 | 1 | 0.174 | 106 | 0.109 | 78 |
-| 3 | 1 | 1 | 0.123 | 118 | 0.333 | 74 |
-| 5 | 1 | 0 | 0.066 | 104 | 0.436 | 33 |
-
-Corrélation de rang IS↔OOS sur la grille : -0.17 ; part des cellules positives en OOS : 100 %.
-
-![IS vs OOS](is_vs_oos_XAUUSD_H1_BOS.png)
-
-![heatmap OOS](heatmap_OOS_XAUUSD_H1_BOS.png)
-
-Réglage retenu en OOS : avg_R 0.333 sur 74 trades.
+_Pas de données forward pour ce réglage._
 
 **Contrôle aléatoire**
 
 _Pas de contrôle aléatoire fourni (prompt modèle CONTROLE_ALEATOIRE)._
 
-**Verdict : À CONFIRMER** — C2 non atteint (t≈0.74); C4 manquant (contrôle aléatoire)
+**Verdict : À CONFIRMER** — C2 non atteint (t≈0.74); C3 manquant (forward); C4 manquant (contrôle aléatoire)
 
 ### XAUUSD H1 — CHOCH (RR=3, SLBuffer=0.10 ATR)
 
@@ -204,7 +187,7 @@ COMBINAISONS = [
 ## 7. Prochaines étapes
 
 - XAUUSD M15 BOS : run forward, contrôle aléatoire (L6 R3 B1), run simple trades (L6 R3 B1)
-- XAUUSD H1 BOS : contrôle aléatoire (L3 R1 B1), run simple trades (L3 R1 B1)
+- XAUUSD H1 BOS : run forward, contrôle aléatoire (L3 R1 B1), run simple trades (L3 R1 B1)
 
 ## 8. Réglages retenus par UT
 
@@ -213,7 +196,7 @@ Aucun réglage universel : chaque ligne est choisie **uniquement** à partir des
 | Symbole | UT | Événement | LeftBars | RightBars | BreakMode | trades | avg_R IS | avg_R forward | Verdict |
 |---|---|---|---|---|---|---|---|---|---|
 | XAUUSD | M15 | BOS | 6 | 3 | 1 | 275 | 0.271 | — | À CONFIRMER |
-| XAUUSD | H1 | BOS | 3 | 1 | 1 | 118 | 0.123 | 0.333 | À CONFIRMER |
+| XAUUSD | H1 | BOS | 3 | 1 | 1 | 118 | 0.123 | — | À CONFIRMER |
 | XAUUSD | H1 | CHOCH | 2 | 1 | 1 | 133 | -0.050 | — | PAS D'EDGE |
 
 

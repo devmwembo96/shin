@@ -1,4 +1,4 @@
 symbole;ut;evenement;rr;sl_buffer;n_passes_is;n_passes_oos;ohlc;C0;C1;C2;C3;C4;L;R;B;plateau;avg_is;trades_is;t_is;part_pos;avg_oos;trades_oos;p_alea;verdict;raisons
 XAUUSD;M15;BOS;3;0.1;108;0;False;True;True;True;;;6;3;1;0.16045555555555557;0.271;275;2.391986879093434;0.8888888888888888;;;;À CONFIRMER;"C3 manquant (forward); C4 manquant (contrôle aléatoire)"
-XAUUSD;H1;BOS;3;0.1;108;22;False;True;True;False;True;;3;1;1;0.14196666666666666;0.1231;118;0.7442848866403978;1.0;0.3333;74.0;;À CONFIRMER;"C2 non atteint (t≈0.74); C4 manquant (contrôle aléatoire)"
+XAUUSD;H1;BOS;3;0.1;108;0;False;True;True;False;;;3;1;1;0.14196666666666666;0.1231;118;0.7442848866403978;1.0;;;;À CONFIRMER;"C2 non atteint (t≈0.74); C3 manquant (forward); C4 manquant (contrôle aléatoire)"
 XAUUSD;H1;CHOCH;3;0.1;108;0;False;True;False;False;;;2;1;1;-0.0575;-0.0497;133;-0.3334008668953841;0.3333333333333333;;;;PAS D'EDGE;"C1 faux (plateau -0.058, cellule -0.050, voisins + 33 %); C2 non atteint (t≈-0.33); C3 manquant (forward); C4 manquant (contrôle aléatoire)"

@@ -222,6 +222,9 @@ def charger(dossier, rapport_dir):
             continue
         for n in noms:
             if n.lower().endswith(".csv"):
+                if "_EN_COURS" in n.upper():
+                    print("Ignoré (optimisation non terminée) : %s" % n)
+                    continue
                 fichiers.append(os.path.join(racine, n))
     fichiers.sort()
     lus = []

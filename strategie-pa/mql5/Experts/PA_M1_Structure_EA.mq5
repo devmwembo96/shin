@@ -133,6 +133,8 @@ int          g_timeouts=0;
 int          g_skips=0;
 int          g_tradeFile=INVALID_HANDLE;
 int          g_optFile=INVALID_HANDLE;
+string g_optFinalName="";   // nom définitif du CSV d'optimisation
+string g_optTmpName="";     // nom provisoire (_EN_COURS) pendant l'optimisation
 datetime     g_lastBarTime=0;
 datetime     g_lastProcessed=0;
 datetime     g_firstTime=0;
@@ -887,7 +889,12 @@ double OnTester()
 //+------------------------------------------------------------------+
 void OnTesterInit()
   {
-   string fn=StringFormat("PA_M1_opt_%s_%s_%s.csv",_Symbol,PA_TFToString(PERIOD_CURRENT),Stamp(TimeLocal()));
+   //--- pendant l'optimisation le fichier porte le suffixe _EN_COURS ;
+   //--- il n'est renommé avec son nom définitif qu'à la toute fin (OnTesterDeinit)
+   string stamp=Stamp(TimeLocal());
+   g_optFinalName=StringFormat("PA_M1_opt_%s_%s_%s.csv",_Symbol,PA_TFToString(PERIOD_CURRENT),stamp);
+   g_optTmpName=StringFormat("PA_M1_opt_%s_%s_%s_EN_COURS.csv",_Symbol,PA_TFToString(PERIOD_CURRENT),stamp);
+   string fn=g_optTmpName;
    g_optFile=FileOpen(fn,FILE_WRITE|FILE_CSV|FILE_COMMON|FILE_ANSI,';');
    if(g_optFile==INVALID_HANDLE)
      {
@@ -980,7 +987,11 @@ void OnTesterDeinit()
      {
       FileClose(g_optFile);
       g_optFile=INVALID_HANDLE;
+      //--- renommage final : le fichier sans _EN_COURS est complet
+      if(FileMove(g_optTmpName,FILE_COMMON,g_optFinalName,FILE_COMMON|FILE_REWRITE))
+         PrintFormat("OnTesterDeinit : CSV d'optimisation terminé -> Common\\Files\\%s",g_optFinalName);
+      else
+         PrintFormat("OnTesterDeinit : renommage impossible (err %d), fichier laissé sous %s",GetLastError(),g_optTmpName);
      }
-   Print("OnTesterDeinit : CSV d'optimisation terminé");
   }
 //+------------------------------------------------------------------+
