@@ -48,7 +48,7 @@ except Exception:  # pragma: no cover
 # =============================================================================
 # PARAMÈTRES D'ANALYSE (règles de verdict : voir aussi texte_regles())
 # =============================================================================
-SPLIT_DEFAUT = "2024-07-01"       # début de l'out-of-sample
+SPLIT_DEFAUT = "2025-07-01"       # début de l'out-of-sample
 MIN_TRADES = 100                  # trades mini pour qu'une passe in-sample compte
 MIN_TRADES_OOS = 40               # trades mini en forward pour juger l'OOS
 T_MIN = 2.0                       # t-stat approx. mini en in-sample

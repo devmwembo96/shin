@@ -30,10 +30,10 @@ ITERATION = 1
 EA_NOM = "PA_M1_Structure_EA"   # nom de l'Expert dans le Navigateur MT5
 
 # Périodes (format MT5 AAAA.MM.JJ)
-IS_DEBUT = "2021.01.01"
-IS_FIN = "2024.06.30"
-OOS_DEBUT = "2024.07.01"
-OOS_FIN = "2025.12.31"
+IS_DEBUT = "2024.01.01"
+IS_FIN = "2025.06.30"
+OOS_DEBUT = "2025.07.01"
+OOS_FIN = "2026.10.31"
 
 # Symboles : nom « logique » -> nom à utiliser chez le broker (à adapter).
 SYMBOLES = {
