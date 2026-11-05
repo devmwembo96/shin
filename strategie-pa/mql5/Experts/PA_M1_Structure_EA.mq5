@@ -718,6 +718,7 @@ void OnTick()
       return;
    bool     hasEvt=false;
    SPAEvent evt;
+   ZeroMemory(evt);   // initialisation explicite (supprime l'avertissement)
    for(int i=0;i<n;i++)
      {
       if(r[i].time<=g_lastProcessed)
